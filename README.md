@@ -1,30 +1,43 @@
-# Recreate UI design
+# Vis3D UI
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+A web-based 2D-to-3D visualizer and computer vision demo platform.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/dugboryeleprince-gmailcoms-projects/v0-recreate-ui-design)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/CzR44d1UVL0)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-vision.multi--ai.software-blue?style=for-the-badge)](https://vision.multi-ai.software/)
 
 ## Overview
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+Vis3D UI is a modern web application for visualizing 2D and 3D data, testing computer vision APIs, and exploring AI-powered features like face/hand detection. Built with Next.js and Tailwind CSS.
 
-## Deployment
+## Live Site
 
-Your project is live at:
+**[https://vision.multi-ai.software/](https://vision.multi-ai.software/)**
 
-**[https://vercel.com/dugboryeleprince-gmailcoms-projects/v0-recreate-ui-design](https://vercel.com/dugboryeleprince-gmailcoms-projects/v0-recreate-ui-design)**
+## Features
 
-## Build your app
+- 2D to 3D visualizer
+- Direct API visualizer
+- Face and hand detection
+- Image uploader
+- System status dashboard
+- Modern UI components
 
-Continue building your app on:
+## Getting Started
 
-**[https://v0.dev/chat/projects/CzR44d1UVL0](https://v0.dev/chat/projects/CzR44d1UVL0)**
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd Vis3D-ui
+   ```
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+3. Run the development server:
+   ```bash
+   pnpm dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## How It Works
+## License
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+MIT
