@@ -29,6 +29,7 @@ export function FaceHandDetector() {
   const fpsUpdateTimeRef = useRef(0)
   const timeRef = useRef(0)
   const faceDetectorRef = useRef<any>(null)
+  const handDetectorRef = useRef<any>(null)
   const previousFrameRef = useRef<ImageData | null>(null)
 
   // Update system status when detection state changes
@@ -187,8 +188,6 @@ export function FaceHandDetector() {
   }
 
   const detectRealFaces = async (video: HTMLVideoElement) => {
-    const faces = []
-
     try {
       // Try browser FaceDetector API first
       if (faceDetectorRef.current && video.readyState === 4) {
@@ -204,7 +203,7 @@ export function FaceHandDetector() {
       // Fallback to computer vision detection
     }
 
-    // Advanced computer vision face detection
+    // Advanced computer vision face detection fallback
     const canvas = canvasRef.current
     if (!canvas) return []
 
@@ -227,6 +226,7 @@ export function FaceHandDetector() {
     }
 
     // Haar-like feature detection
+    const faces = []
     const minFaceSize = 60
     const maxFaceSize = Math.min(tempCanvas.width, tempCanvas.height) / 1.5
     const stepSize = 12

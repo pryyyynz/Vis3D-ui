@@ -24,18 +24,18 @@ Vis3D UI is a modern web application for visualizing 2D and 3D data, testing com
 ## Getting Started
 
 1. Clone the repository:
-   ```bash
+   \`\`\`bash
    git clone <repo-url>
    cd Vis3D-ui
-   ```
+   \`\`\`
 2. Install dependencies:
-   ```bash
+   \`\`\`bash
    pnpm install
-   ```
+   \`\`\`
 3. Run the development server:
-   ```bash
+   \`\`\`bash
    pnpm dev
-   ```
+   \`\`\`
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## License
