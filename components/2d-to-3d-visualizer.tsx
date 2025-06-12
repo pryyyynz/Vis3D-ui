@@ -35,7 +35,7 @@ const updateSystemStatus = (updates: any) => {
 }
 
 // Make sure to include https:// in the URL
-const API_BASE_URL = "https://vis3d-production.up.railway.app"
+const API_BASE_URL = "https://vis3d.fly.dev"
 
 export function TwoDToThreeDVisualizer() {
   const [isLoading, setIsLoading] = useState(false)

@@ -204,6 +204,10 @@ export function FaceHandDetector() {
     }
 
     // Advanced computer vision face detection fallback
+    return detectFallbackFaces(video)
+  }
+
+  const detectFallbackFaces = (video: HTMLVideoElement) => {
     const canvas = canvasRef.current
     if (!canvas) return []
 
@@ -250,6 +254,11 @@ export function FaceHandDetector() {
   }
 
   const detectRealHands = async (ctx: CanvasRenderingContext2D, video: HTMLVideoElement) => {
+    // Use computer vision-based hand detection
+    return detectFallbackHands(ctx, video)
+  }
+
+  const detectFallbackHands = (ctx: CanvasRenderingContext2D, video: HTMLVideoElement) => {
     const canvas = canvasRef.current
     if (!canvas) return []
 
@@ -555,93 +564,83 @@ export function FaceHandDetector() {
 
   const drawInteractiveFaceMesh = (
     ctx: CanvasRenderingContext2D,
-    face: { x: number; y: number; width: number; height: number },
+    face: { x: number; y: number; width: number; height: number; mesh?: any[] },
   ) => {
-    const { x, y, width, height } = face
+    const { x, y, width, height, mesh } = face
     const time = timeRef.current
 
-    // Face mesh with dynamic positioning
-    ctx.strokeStyle = `rgba(59, 130, 246, 0.9)`
-    ctx.fillStyle = `rgba(59, 130, 246, 0.15)`
-    ctx.lineWidth = 2
+    // Draw basic face rectangle if no mesh is available
+    if (!mesh || !Array.isArray(mesh)) {
+      // Fall back to basic face outline
+      ctx.strokeStyle = `rgba(59, 130, 246, 0.9)`
+      ctx.fillStyle = `rgba(59, 130, 246, 0.15)`
+      ctx.lineWidth = 2
+      ctx.fillRect(x, y, width, height)
+      ctx.strokeRect(x, y, width, height)
 
-    // Fill face area
-    ctx.fillRect(x, y, width, height)
-
-    // Dynamic mesh grid
-    const gridSize = 8
-    const cellWidth = width / gridSize
-    const cellHeight = height / gridSize
-
-    ctx.strokeStyle = `rgba(59, 130, 246, 0.8)`
-    ctx.lineWidth = 1.5
-
-    // Animated mesh lines that follow face position
-    for (let i = 0; i <= gridSize; i++) {
-      const waveOffset = Math.sin(time + i * 0.3) * 3
-      const waveOffset2 = Math.cos(time + i * 0.4) * 2
-
-      // Vertical lines
-      ctx.beginPath()
-      ctx.moveTo(x + i * cellWidth + waveOffset, y)
-      ctx.lineTo(x + i * cellWidth + waveOffset, y + height)
-      ctx.stroke()
-
-      // Horizontal lines
-      ctx.beginPath()
-      ctx.moveTo(x, y + i * cellHeight + waveOffset2)
-      ctx.lineTo(x + width, y + i * cellHeight + waveOffset2)
-      ctx.stroke()
+      // Face label
+      ctx.fillStyle = "#3b82f6"
+      ctx.font = "bold 14px Arial"
+      ctx.fillText("FACE DETECTED", x, y - 8)
+      return
     }
 
-    // Eye regions that follow face
-    const eyeY = y + height * 0.35
-    const eyeWidth = width * 0.15
-    const eyeHeight = height * 0.1
-    const leftEyeX = x + width * 0.25
-    const rightEyeX = x + width * 0.6
-
-    ctx.fillStyle = `rgba(0, 255, 255, 0.4)`
-    ctx.fillRect(leftEyeX, eyeY, eyeWidth, eyeHeight)
-    ctx.fillRect(rightEyeX, eyeY, eyeWidth, eyeHeight)
-
-    ctx.strokeStyle = `rgba(0, 255, 255, 0.9)`
-    ctx.lineWidth = 2
-    ctx.strokeRect(leftEyeX, eyeY, eyeWidth, eyeHeight)
-    ctx.strokeRect(rightEyeX, eyeY, eyeWidth, eyeHeight)
-
-    // Mouth region that follows face
-    const mouthY = y + height * 0.7
-    const mouthWidth = width * 0.4
-    const mouthHeight = height * 0.1
-    const mouthX = x + width * 0.3
-
-    ctx.fillStyle = `rgba(255, 100, 100, 0.4)`
-    ctx.fillRect(mouthX, mouthY, mouthWidth, mouthHeight)
-
-    ctx.strokeStyle = `rgba(255, 100, 100, 0.9)`
-    ctx.strokeRect(mouthX, mouthY, mouthWidth, mouthHeight)
-
-    // Animated corner markers
-    const cornerSize = 15
-    const pulse = Math.sin(time * 2) * 0.3 + 0.8
-    ctx.strokeStyle = `rgba(59, 130, 246, ${pulse})`
-    ctx.lineWidth = 3
-
-    // Corner markers that follow face position
-    const corners = [
-      [x, y, x + cornerSize, y, x, y + cornerSize],
-      [x + width - cornerSize, y, x + width, y, x + width, y + cornerSize],
-      [x, y + height - cornerSize, x, y + height, x + cornerSize, y + height],
-      [x + width - cornerSize, y + height, x + width, y + height, x + width, y + height - cornerSize],
+    // Draw advanced face mesh with actual keypoints
+    // Draw connections between face keypoints to create a mesh
+    const connections = [
+      // Jaw line
+      [234, 93, 132, 58, 172, 136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397, 288],
+      // Left eye
+      [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246],
+      // Right eye
+      [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398],
+      // Lips outer
+      [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181],
+      // Lips inner
+      [78, 95, 88, 178, 87, 14, 317, 402, 318, 324, 308, 191, 80, 81, 82, 13],
+      // Left eyebrow
+      [276, 283, 282, 295, 300, 293, 334],
+      // Right eyebrow
+      [46, 53, 52, 65, 55, 70, 63],
+      // Nose
+      [168, 6, 197, 195, 5, 4, 45, 220, 115, 49, 131, 134, 51, 5, 281, 248, 114, 188, 217, 122],
     ]
 
-    corners.forEach(([x1, y1, x2, y2, x3, y3]) => {
-      ctx.beginPath()
-      ctx.moveTo(x1, y1)
-      ctx.lineTo(x2, y2)
-      ctx.lineTo(x3, y3)
-      ctx.stroke()
+    // Draw the connections to create a face mesh
+    ctx.strokeStyle = `rgba(59, 130, 246, 0.5)`
+    ctx.lineWidth = 1
+
+    // Draw the mesh connections
+    for (const connectionGroup of connections) {
+      if (connectionGroup.every((idx) => mesh[idx])) {
+        ctx.beginPath()
+        const startPoint = mesh[connectionGroup[0]]
+        ctx.moveTo(startPoint.x, startPoint.y)
+
+        for (let i = 1; i < connectionGroup.length; i++) {
+          const point = mesh[connectionGroup[i]]
+          ctx.lineTo(point.x, point.y)
+        }
+
+        // Close the loop if it's a closed shape like eyes or lips
+        const firstPoint = mesh[connectionGroup[0]]
+        ctx.lineTo(firstPoint.x, firstPoint.y)
+        ctx.stroke()
+      }
+    }
+
+    // Draw key feature points with pulsing effect
+    const keyPoints = [33, 263, 61, 291, 199] // eyes, mouth corners, nose tip
+    keyPoints.forEach((idx) => {
+      if (mesh[idx]) {
+        const point = mesh[idx]
+        const pulse = Math.sin(time * 2) * 0.3 + 0.8
+
+        ctx.fillStyle = `rgba(255, 100, 100, ${pulse})`
+        ctx.beginPath()
+        ctx.arc(point.x, point.y, 4, 0, Math.PI * 2)
+        ctx.fill()
+      }
     })
 
     // Face label
@@ -652,23 +651,66 @@ export function FaceHandDetector() {
 
   const drawInteractiveHandVertices = (
     ctx: CanvasRenderingContext2D,
-    hand: { x: number; y: number; width: number; height: number },
+    hand: { x: number; y: number; width: number; height: number; landmarks?: any[]; handedness?: string },
   ) => {
-    const { x, y, width, height } = hand
+    const { x, y, width, height, landmarks, handedness } = hand
     const time = timeRef.current
 
-    // Generate hand landmarks that follow actual hand position
-    const handLandmarks = generateRealHandLandmarks(x, y, width, height)
+    // If no landmarks are provided, fall back to generic hand outline
+    if (!landmarks || !Array.isArray(landmarks)) {
+      // Draw hand outline
+      ctx.strokeStyle = `rgba(15, 23, 42, 0.8)`
+      ctx.lineWidth = 2
+      ctx.strokeRect(x, y, width, height)
 
-    // Draw hand skeleton
+      // Generate basic hand landmarks
+      const generatedLandmarks = generateBasicHandLandmarks(x, y, width, height)
+      drawHandSkeleton(ctx, generatedLandmarks)
+
+      // Hand label
+      ctx.fillStyle = "#0f172a"
+      ctx.font = "bold 12px Arial"
+      ctx.fillText("HAND DETECTED", x, y - 8)
+      return
+    }
+
+    // Draw advanced hand vertices with actual keypoints
+    // Draw connections between keypoints to create hand skeleton
+    const fingerConnections = [
+      // Thumb
+      [0, 1, 2, 3, 4],
+      // Index finger
+      [0, 5, 6, 7, 8],
+      // Middle finger
+      [0, 9, 10, 11, 12],
+      // Ring finger
+      [0, 13, 14, 15, 16],
+      // Pinky
+      [0, 17, 18, 19, 20],
+      // Palm
+      [0, 5, 9, 13, 17],
+    ]
+
+    // Draw the skeleton with the actual landmarks
     ctx.strokeStyle = `rgba(15, 23, 42, 0.8)`
     ctx.lineWidth = 2
-    drawHandSkeleton(ctx, handLandmarks)
 
-    // Draw vertices that follow hand movement
-    handLandmarks.forEach((point, index) => {
+    for (const connectionGroup of fingerConnections) {
+      ctx.beginPath()
+      const startPoint = landmarks[connectionGroup[0]]
+      ctx.moveTo(startPoint.x, startPoint.y)
+
+      for (let i = 1; i < connectionGroup.length; i++) {
+        const point = landmarks[connectionGroup[i]]
+        ctx.lineTo(point.x, point.y)
+      }
+      ctx.stroke()
+    }
+
+    // Draw vertices/points on the landmarks
+    landmarks.forEach((point, index) => {
       const pulse = Math.sin(time * 3 + index * 0.2) * 0.3 + 0.7
-      const size = 5 + Math.sin(time * 2 + index * 0.3) * 2
+      const size = index === 0 ? 6 : 4 // Make wrist point larger
 
       // Outer glow
       ctx.fillStyle = `rgba(15, 23, 42, ${pulse})`
@@ -683,21 +725,97 @@ export function FaceHandDetector() {
       ctx.fill()
     })
 
-    // Hand outline that follows actual hand
-    ctx.strokeStyle = `rgba(15, 23, 42, 1)`
-    ctx.lineWidth = 2
-    ctx.strokeRect(x, y, width, height)
-
-    // Hand label
+    // Hand label with handedness if available
     ctx.fillStyle = "#0f172a"
     ctx.font = "bold 12px Arial"
-    ctx.fillText("HAND VERTICES", x, y - 8)
+    ctx.fillText(`${handedness || "HAND"} LANDMARKS`, x, y - 8)
   }
 
-  const generateRealHandLandmarks = (x: number, y: number, width: number, height: number) => {
+  const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: any[]) => {
+    // Draw connections between landmarks to represent fingers
+    const fingerConnections = [
+      // Thumb
+      [0, 1, 2, 3, 4],
+      // Index finger
+      [0, 5, 6, 7, 8],
+      // Middle finger
+      [0, 9, 10, 11, 12],
+      // Ring finger
+      [0, 13, 14, 15, 16],
+      // Pinky
+      [0, 17, 18, 19, 20],
+    ]
+
+    // Draw hand skeleton
+    ctx.strokeStyle = "#0f172a"
+    ctx.lineWidth = 1.5
+
+    for (const connectionGroup of fingerConnections) {
+      ctx.beginPath()
+      const startPoint = landmarks[connectionGroup[0]]
+      ctx.moveTo(startPoint.x, startPoint.y)
+
+      for (let i = 1; i < connectionGroup.length; i++) {
+        const point = landmarks[connectionGroup[i]]
+        ctx.lineTo(point.x, point.y)
+      }
+      ctx.stroke()
+    }
+
+    // Draw palm connections
+    ctx.beginPath()
+    ctx.moveTo(landmarks[0].x, landmarks[0].y)
+    ctx.lineTo(landmarks[5].x, landmarks[5].y)
+    ctx.lineTo(landmarks[9].x, landmarks[9].y)
+    ctx.lineTo(landmarks[13].x, landmarks[13].y)
+    ctx.lineTo(landmarks[17].x, landmarks[17].y)
+    ctx.lineTo(landmarks[0].x, landmarks[0].y)
+    ctx.stroke()
+
+    // Draw points at each landmark
+    ctx.fillStyle = "#3b82f6"
+    landmarks.forEach((point) => {
+      ctx.beginPath()
+      ctx.arc(point.x, point.y, 3, 0, Math.PI * 2)
+      ctx.fill()
+    })
+  }
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext("2d")
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+  }
+
+  const updateFPS = () => {
+    frameCountRef.current++
+    const now = performance.now()
+
+    if (now - fpsUpdateTimeRef.current >= 1000) {
+      const fps = Math.round((frameCountRef.current * 1000) / (now - fpsUpdateTimeRef.current))
+      setStats((prev) => ({ ...prev, fps }))
+      frameCountRef.current = 0
+      fpsUpdateTimeRef.current = now
+    }
+  }
+
+  const toggleDetection = () => {
+    setIsDetecting(!isDetecting)
+    if (!isDetecting) {
+      clearCanvas()
+      setStats((prev) => ({ ...prev, faces: 0, hands: 0 }))
+    }
+  }
+
+  // Helper function for basic hand landmarks when ML model fails
+  const generateBasicHandLandmarks = (x: number, y: number, width: number, height: number) => {
     const landmarks = []
 
-    // Generate landmarks based on actual hand position
+    // Generate landmarks based on hand position
     // Wrist
     landmarks.push({ x: x + width * 0.5, y: y + height * 0.9 })
 
@@ -732,73 +850,6 @@ export function FaceHandDetector() {
     landmarks.push({ x: x + width * 0.85, y: y + height * 0.15 })
 
     return landmarks
-  }
-
-  const drawHandSkeleton = (ctx: CanvasRenderingContext2D, landmarks: Array<{ x: number; y: number }>) => {
-    const connections = [
-      [0, 1],
-      [0, 5],
-      [0, 9],
-      [0, 13],
-      [0, 17],
-      [1, 2],
-      [2, 3],
-      [3, 4],
-      [5, 6],
-      [6, 7],
-      [7, 8],
-      [9, 10],
-      [10, 11],
-      [11, 12],
-      [13, 14],
-      [14, 15],
-      [15, 16],
-      [17, 18],
-      [18, 19],
-      [19, 20],
-      [5, 9],
-      [9, 13],
-      [13, 17],
-    ]
-
-    connections.forEach(([start, end]) => {
-      if (landmarks[start] && landmarks[end]) {
-        ctx.beginPath()
-        ctx.moveTo(landmarks[start].x, landmarks[start].y)
-        ctx.lineTo(landmarks[end].x, landmarks[end].y)
-        ctx.stroke()
-      }
-    })
-  }
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext("2d")
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-    }
-  }
-
-  const updateFPS = () => {
-    frameCountRef.current++
-    const now = performance.now()
-
-    if (now - fpsUpdateTimeRef.current >= 1000) {
-      const fps = Math.round((frameCountRef.current * 1000) / (now - fpsUpdateTimeRef.current))
-      setStats((prev) => ({ ...prev, fps }))
-      frameCountRef.current = 0
-      fpsUpdateTimeRef.current = now
-    }
-  }
-
-  const toggleDetection = () => {
-    setIsDetecting(!isDetecting)
-    if (!isDetecting) {
-      clearCanvas()
-      setStats((prev) => ({ ...prev, faces: 0, hands: 0 }))
-    }
   }
 
   return (
